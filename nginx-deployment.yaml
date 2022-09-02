@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  selector:
+    matchLabels:
+      app: nginx
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      volumes:
+        - name: webroot
+          emptyDir: {}
+      containers:
+        - name: nginx
+          image: harbor-repo.vmware.com/dockerhub-proxy-cache/library/nginx
+          volumeMounts:
+            - name: webroot
+              mountPath: /usr/share/nginx/html
+          ports:
+            - containerPort: 80
+        - name: utility
+          image: harbor-repo.vmware.com/dockerhub-proxy-cache/alpine/curl
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          volumeMounts:
+            - name: webroot
+              mountPath: /webroot
+          command: ["/bin/sh"]
+          args:
+            # - while true; do
+            #   date >> /webroot/index.html
+            #   echo "Utility container says hi." >> /webroot/index.html
+            #   sleep 60;
+            #   done
+            [
+              "-c",
+              "echo This request is served by $HOSTNAME > /webroot/index.html && sleep 60m",
+            ]
