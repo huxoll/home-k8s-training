@@ -25,6 +25,14 @@ use for some additional steps.
 kubectl apply -f nginx-deployment.yaml
 ```
 
+Fetch your deployment and pods to examine the deployment as it comes up.
+
+```shell
+kubectl get pods,deployments
+```
+
+When the pods have reached ```Running``` status you are ready to continue.
+
 ## Exploring Pod Networking
 
 Let's open a shell into the utility container and check the web content. In the
@@ -61,9 +69,14 @@ cat frontend-service.yaml
 
 Now, let's expose the Nginx webserver as a service.
 
-
 ```shell
 kubectl apply -f frontend-service.yaml
+```
+
+You can view the details of the created service with a get command:
+
+```shell
+kubectl describe svc frontend
 ```
 
 Also, to ensure that the pods are aware of the service, let's recreate the
@@ -76,7 +89,7 @@ kubectl scale deployment nginx-deployment --replicas=0; kubectl scale deployment
 ## Accessing a Service
 
 After the deployment has finished the scaling operation, you will likely need
-to recreate the variable that points to the pod.  
+to recreate the variable that points to the pod.
 
 ```shell
 export MYPOD="$(kubectl get pods -l app=nginx | tail -1 | cut -d' ' -f 1)"
@@ -93,6 +106,7 @@ kubectl exec -it $MYPOD -c utility -- /bin/sh
 echo "The IP of service is $FRONTEND_SERVICE_HOST"
 curl http://$FRONTEND_SERVICE_HOST
  ```
+
 ## In Conclusion
 
 In this lab, you have deployed an application and created a simple service that
